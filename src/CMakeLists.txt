@@ -1,0 +1,33 @@
+
+cmake_minimum_required(VERSION 3.12)
+
+project(seam-carving)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if (MSVC)
+  add_compile_options(/WX)
+  add_compile_options(
+  "$<$<CONFIG:RELEASE>:/MT>"
+  "$<$<CONFIG:DEBUG>:/MTd>"
+  )
+else()
+  add_compile_options(-Wall -Wextra -pedantic -Werror)
+endif()
+
+find_package(OpenCV REQUIRED)
+
+add_executable(seam-carving
+  main.cpp
+  seam_carving.cpp
+)
+
+target_include_directories(seam-carving SYSTEM
+  PRIVATE ${OpenCV_INCLUDE_DIRS}
+)
+
+target_link_libraries(seam-carving
+  ${OpenCV_LIBS}
+)
