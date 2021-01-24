@@ -9,10 +9,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 if (MSVC)
   add_compile_options(/WX)
-  add_compile_options(
-  "$<$<CONFIG:RELEASE>:/MT>"
-  "$<$<CONFIG:DEBUG>:/MTd>"
-  )
 else()
   add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
