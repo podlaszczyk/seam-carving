@@ -1,6 +1,6 @@
 # Project
 
-This repository contains a simple ready to use CMake based project you may use for writing your solution.
+This repository contains a working CMake based project you may use for writing your solution.
 
 ## Prerequisities
 
@@ -20,7 +20,7 @@ Running the docker container:
 docker run -v $(pwd):/workdir -it seamcarving bash
 ```
 
-The above command maps the current working directory from the host OS as the _/workdir_ directory inside the docker container.
+The above command maps the current working directory from the host OS to the _/workdir_ directory inside the docker container.
 
 ## Building
 
