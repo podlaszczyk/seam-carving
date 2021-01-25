@@ -15,15 +15,22 @@ endif()
 
 find_package(OpenCV REQUIRED)
 
-add_executable(seam-carving
-  main.cpp
+add_library(sc
   seam_carving.cpp
 )
 
-target_include_directories(seam-carving SYSTEM
-  PRIVATE ${OpenCV_INCLUDE_DIRS}
+target_include_directories(sc SYSTEM
+  PUBLIC ${OpenCV_INCLUDE_DIRS}
+)
+
+target_link_libraries(sc
+  ${OpenCV_LIBS}
+)
+
+add_executable(seam-carving
+  main.cpp
 )
 
 target_link_libraries(seam-carving
-  ${OpenCV_LIBS}
+  sc
 )
