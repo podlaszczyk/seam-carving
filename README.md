@@ -17,10 +17,13 @@ docker build . -t seamcarving
 
 Running the docker container:
 ```
-docker run -v $(pwd):/workdir -it seamcarving bash
+docker run --rm -v (pwd):/workdir -p 2323:2323 -it seamcarving bash
 ```
 
-The above command maps the current working directory from the host OS to the _/workdir_ directory inside the docker container.
+port 2323 is custom selected port to enable ssh connection between host and container
+
+The above command maps the current working directory from the host OS to the _/workdir_ directory
+inside the docker container.
 
 ## Building
 

@@ -20,17 +20,20 @@ add_library(sc
 )
 
 target_include_directories(sc SYSTEM
-  PUBLIC ${OpenCV_INCLUDE_DIRS}
-)
+        PUBLIC ${OpenCV_INCLUDE_DIRS}
+        INTERFACE .
+        )
 
 target_link_libraries(sc
-  ${OpenCV_LIBS}
-)
+        ${OpenCV_LIBS}
+        )
 
 add_executable(seam-carving
-  main.cpp
-)
+        main.cpp
+        )
 
 target_link_libraries(seam-carving
-  sc
-)
+        sc
+        )
+
+add_subdirectory(unit-tests)
