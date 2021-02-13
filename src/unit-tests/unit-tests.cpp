@@ -34,3 +34,19 @@ TEST_CASE("Edges")
 
     edges(image, path);
 }
+
+TEST_CASE("SobelX")
+{
+    const auto image = imread("/workdir/examples/castle.jpg");
+    fs::path path{"/workdir/examples/castle-sobel-x.jpg"};
+
+    sobelX(image, path);
+}
+
+TEST_CASE("SobelY")
+{
+    const auto image = imread("/workdir/examples/castle.jpg");
+    fs::path path{"/workdir/examples/castle-sobel-y.jpg"};
+
+    sobelY(image, path);
+}
