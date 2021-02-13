@@ -18,3 +18,19 @@ TEST_CASE("Hello world with castle image, image is loaded correctly")
     REQUIRE(seamCarved.cols == 1428);
     REQUIRE(seamCarved.rows == 968);
 }
+
+TEST_CASE("Grey")
+{
+    const auto image = imread("/workdir/examples/castle.jpg");
+    fs::path path{"/workdir/examples/castle-grey.jpg"};
+
+    grey(image, path);
+}
+
+TEST_CASE("Edges")
+{
+    const auto image = imread("/workdir/examples/castle.jpg");
+    fs::path path{"/workdir/examples/castle-edges.jpg"};
+
+    edges(image, path);
+}

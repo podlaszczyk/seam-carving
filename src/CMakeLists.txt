@@ -25,7 +25,7 @@ target_include_directories(sc SYSTEM
         )
 
 target_link_libraries(sc
-        ${OpenCV_LIBS}
+        ${OpenCV_LIBS} stdc++fs
         )
 
 add_executable(seam-carving
