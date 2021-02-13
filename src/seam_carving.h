@@ -11,3 +11,6 @@ void grey(const cv::Mat& image, fs::path out);
 void edges(const cv::Mat& image, fs::path out);
 void sobelX(const cv::Mat& image, fs::path out);
 void sobelY(const cv::Mat& image, fs::path out);
+cv::Mat sobelXY(const cv::Mat& image, fs::path out);
+void printImage(const cv::Mat& image);
+void minimalEnergyToBottom(const cv::Mat& Energy, cv::Mat& MinEnergy);
