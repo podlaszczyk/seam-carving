@@ -141,42 +141,54 @@ void drawLeastEnergyCurve(cv::Mat& castle, cv::Mat& minEnergy, const cv::Mat& ar
     }
 }
 
-cv::Mat removeEnergyCurve(cv::Mat& castle, cv::Mat& minEnergy, cv::Mat& arrows, int curvesNumber)
+cv::Mat removeEnergyCurve(const cv::Mat& castle, const cv::Mat& minEnergy, const cv::Mat& arrows, int curvesNumber)
 {
-    (void)curvesNumber;
-    cv::Mat emptyCastle(castle.rows, castle.cols - 1, castle.type());
-
+    cv::Mat emptyCastle(castle.rows, castle.cols - curvesNumber, castle.type());
+    //    cv::Mat minEnergyLocal = minEnergy;
+    cv::Mat arrowsLocal = arrows;
     double minVal;
     double maxVal;
     cv::Point minLoc;
     cv::Point maxLoc;
-    minMaxLoc(minEnergy.row(0), &minVal, &maxVal, &minLoc, &maxLoc);
+    //    minMaxLoc(minEnergy.row(0), &minVal, &maxVal, &minLoc, &maxLoc);
 
-    for (int counter = 0; counter < arrows.rows; ++counter)
+    // do removal N times according to curves number
+    for (int cNum = 0; cNum < curvesNumber; ++cNum)
     {
-        // copy all values except seam-curved point
-        for (int i = 0; i < castle.cols; ++i)
+        minMaxLoc(minEnergy.row(0), &minVal, &maxVal, &minLoc, &maxLoc);
+        //        cv::Mat minEnergyLocal;
+        //        cv::Mat grey;
+
+        for (int counter = 0; counter < arrowsLocal.rows; ++counter)
         {
-            if (minLoc == cv::Point(counter, i))
+            // copy all values except seam-curved point
+            for (int i = 0; i < castle.cols; ++i)
             {
-                continue;
+                if (minLoc == cv::Point(counter, i))
+                {
+                    continue;
+                }
+                emptyCastle.at<cv::Vec3b>(counter, i) = castle.at<cv::Vec3b>(counter, i);
             }
-            emptyCastle.at<cv::Vec3b>(counter, i) = castle.at<cv::Vec3b>(counter, i);
+            if (arrowsLocal.at<float>(minLoc) == -1)
+            {
+                minLoc.x -= 1;
+                minLoc.y += 1;
+            }
+            else if (arrowsLocal.at<float>(minLoc) == 0)
+            {
+                minLoc.y += 1;
+            }
+            else
+            {
+                minLoc.x += 1;
+                minLoc.y += 1;
+            }
         }
-        if (arrows.at<float>(minLoc) == -1)
-        {
-            minLoc.x -= 1;
-            minLoc.y += 1;
-        }
-        else if (arrows.at<float>(minLoc) == 0)
-        {
-            minLoc.y += 1;
-        }
-        else
-        {
-            minLoc.x += 1;
-            minLoc.y += 1;
-        }
+        cv::Mat grey;
+        cvtColor(emptyCastle, grey, cv::COLOR_BGR2GRAY);
+        cv::Mat minEnergyLocal(grey.rows, grey.cols, grey.type());
+        arrowsLocal = minimalEnergyToBottom<uchar>(grey, minEnergyLocal);
     }
     return emptyCastle;
 }
