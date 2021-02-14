@@ -104,3 +104,5 @@ cv::Mat minimalEnergyToBottom(const cv::Mat& Energy, cv::Mat& MinEnergy)
     }
     return arrows;
 }
+
+void drawLeastEnergyCurve(cv::Mat& castle, const cv::Mat& minEnergy, const cv::Mat& arrows);

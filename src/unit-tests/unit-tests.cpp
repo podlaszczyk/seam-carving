@@ -5,6 +5,7 @@
  */
 
 #include <catch2/catch.hpp>
+#include <opencv2/viz/types.hpp>
 #include "seam_carving.h"
 
 using namespace cv;
@@ -130,4 +131,39 @@ TEST_CASE("Minimal Energy For Castle")
     cv::Mat minEnergy(grey.rows, grey.cols, type);
     minimalEnergyToBottom<uchar>(grey, minEnergy);
     imwrite(path, minEnergy);
+}
+
+TEST_CASE("Draw pink rectangle on Castle")
+{
+    auto castle = imread("/workdir/examples/castle.jpg");
+    fs::path path{"/workdir/examples/castle-pink.jpg"};
+
+    // rgb(255,105,180) pink
+    viz::Color color(255, 105, 180);
+    for (int i = 200; i < 400; ++i)
+    {
+        for (int j = 100; j < 200; ++j)
+        {
+            Vec3b& color = castle.at<Vec3b>(Point(i, j));
+            color[0] = 255;
+            color[1] = 105;
+            color[2] = 180;
+        }
+    }
+
+    imwrite(path, castle);
+}
+
+TEST_CASE("Draw one red curve with least Energy")
+{
+    auto castle = imread("/workdir/examples/castle.jpg");
+    const auto grey = imread("/workdir/examples/castle-sobel-x-y.jpg", IMREAD_GRAYSCALE);
+    fs::path path{"/workdir/examples/castle-red-least-energy-curve.jpg"};
+
+    const auto type = grey.type();
+    cv::Mat minEnergy(grey.rows, grey.cols, type);
+    const auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
+
+    drawLeastEnergyCurve(castle, minEnergy, arrows);
+    imwrite(path, castle);
 }

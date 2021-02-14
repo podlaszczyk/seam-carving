@@ -61,3 +61,38 @@ cv::Mat sobelXY(const cv::Mat& image, fs::path out)
     imwrite(out, output);
     return output;
 }
+
+void drawLeastEnergyCurve(cv::Mat& castle, const cv::Mat& minEnergy, const cv::Mat& arrows)
+{
+    double minVal;
+    double maxVal;
+    cv::Point minLoc;
+    cv::Point maxLoc;
+
+    minMaxLoc(minEnergy.row(0), &minVal, &maxVal, &minLoc, &maxLoc);
+
+    std::cout << "minVal " << minVal << " maxVal " << maxVal << " minLoc " << minLoc << " maxLoc " << maxLoc << "\n";
+    for (int counter = 0; counter < arrows.rows; ++counter)
+    {
+        cv::Vec3b& color = castle.at<cv::Vec3b>(minLoc);
+        color[0] = 0;
+        color[1] = 0;
+        color[2] = 255;
+
+        if (arrows.at<float>(minLoc) == -1)
+        {
+            minLoc.x -= 1;
+            minLoc.y += 1;
+        }
+        else if (arrows.at<float>(minLoc) == 0)
+        {
+            minLoc.y += 1;
+        }
+        else
+        {
+            minLoc.x += 1;
+            minLoc.y += 1;
+        }
+        std::cout << " minLoc " << minLoc << "\n";
+    }
+}
