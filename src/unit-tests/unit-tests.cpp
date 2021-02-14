@@ -78,11 +78,20 @@ TEST_CASE("Minimal Energy")
                     1.3, 0.2, 0.2, 0.7, 1.3, 0.8,
                     0.4, 0.6, 0.2, 0.4, 0.4, 0.5,
                     0.2, 0.4, 0.2, 0.5, 0.3, 0.0};
+
+    float expectedArrowsData[36] = {
+                    0, 1, 0, -1, -1, 0,
+                    1, 0, -1, -1, -1, -1,
+                    1, 0, -1, -1, -1, 0,
+                    0, 1, 0, -1, -1, -1,
+                    0, -1, 0, -1, 1, 0};
+
     // clang-format on
 
     cv::Mat minEnergy(6, 6, CV_32F);
     cv::Mat expectedMinEnergy(6, 6, CV_32F, minData);
-    minimalEnergyToBottom<float>(grey, minEnergy);
+    cv::Mat expectedArrows(5, 6, CV_32F, expectedArrowsData);
+    const auto arrows = minimalEnergyToBottom<float>(grey, minEnergy);
 
     cv::Ptr<cv::Formatter> fmt = cv::Formatter::get(cv::Formatter::FMT_DEFAULT);
     fmt->set32fPrecision(1);
@@ -91,14 +100,23 @@ TEST_CASE("Minimal Energy")
     std::cout << fmt->format(minEnergy);
 
     bool areIdentical = false;
-
     const auto norm = cv::norm(expectedMinEnergy, minEnergy, cv::NORM_L1);
     if (fabs(0.0 - norm) < 0.1)
     {
         areIdentical = true;
     }
-
     REQUIRE(areIdentical);
+
+    std::cout << "\n\nArrows Expected\n";
+    std::cout << fmt->format(expectedArrows) << "\n\n Arrows \n";
+    std::cout << fmt->format(arrows);
+    bool areArrowsIdentical = false;
+    const auto normArrows = cv::norm(expectedArrows, arrows, cv::NORM_L1);
+    if (fabs(0.0 - normArrows) < 0.1)
+    {
+        areArrowsIdentical = true;
+    }
+    REQUIRE(areArrowsIdentical);
 }
 
 TEST_CASE("Minimal Energy For Castle")

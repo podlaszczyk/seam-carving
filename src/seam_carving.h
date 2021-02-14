@@ -15,8 +15,10 @@ cv::Mat sobelXY(const cv::Mat& image, fs::path out);
 void printImage(const cv::Mat& image);
 
 template <typename type>
-void minimalEnergyToBottom(const cv::Mat& Energy, cv::Mat& MinEnergy)
+cv::Mat minimalEnergyToBottom(const cv::Mat& Energy, cv::Mat& MinEnergy)
 {
+    cv::Mat arrows(Energy.rows - 1, Energy.cols, CV_32F);
+
     if (Energy.channels() != 1)
     {
         throw std::logic_error("too many channels");
@@ -51,8 +53,46 @@ void minimalEnergyToBottom(const cv::Mat& Energy, cv::Mat& MinEnergy)
                 children = {MinEnergy.at<type>(r + 1, c - 1), MinEnergy.at<type>(r + 1, c)};
             }
 
-            const auto minimalChild = *std::min_element(children.cbegin(), children.cend());
-            MinEnergy.at<type>(r, c) = Energy.at<type>(r, c) + minimalChild;
+            const auto minimalChild = std::min_element(children.cbegin(), children.cend());
+            MinEnergy.at<type>(r, c) = Energy.at<type>(r, c) + *minimalChild;
+
+            if (c == 0)
+            {
+                if (minimalChild == children.cbegin())
+                {
+                    arrows.at<float>(r, c) = 0;
+                }
+                else
+                {
+                    arrows.at<float>(r, c) = 1;
+                }
+            }
+            else if (c == lastColumn)
+            {
+                if (minimalChild == children.cbegin())
+                {
+                    arrows.at<float>(r, c) = -1;
+                }
+                else
+                {
+                    arrows.at<float>(r, c) = 0;
+                }
+            }
+            else
+            {
+                if (minimalChild == children.cbegin())
+                {
+                    arrows.at<float>(r, c) = -1;
+                }
+                else if (minimalChild == children.begin() + 1)
+                {
+                    arrows.at<float>(r, c) = 0;
+                }
+                else
+                {
+                    arrows.at<float>(r, c) = 1;
+                }
+            }
             //            std::cout << std::dec << "col: " << c << " row: " << r << " min: " << minimalChild << " from
             //            "; for (const auto child : children)
             //            {
@@ -62,4 +102,5 @@ void minimalEnergyToBottom(const cv::Mat& Energy, cv::Mat& MinEnergy)
         }
         //        std::cout << "\n";
     }
+    return arrows;
 }
