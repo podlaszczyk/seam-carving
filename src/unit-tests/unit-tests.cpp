@@ -209,3 +209,16 @@ TEST_CASE("Draw 400 red curves with least Energy")
     drawLeastEnergyCurve(castle, minEnergy, arrows, 400);
     imwrite(path, castle);
 }
+
+TEST_CASE("Remove one least important red curve from castle")
+{
+    auto castle = imread("/workdir/examples/castle.jpg");
+    const auto grey = imread("/workdir/examples/castle-sobel-x-y.jpg", IMREAD_GRAYSCALE);
+    fs::path path{"/workdir/examples/castle-shrinked-1.jpg"};
+
+    const auto type = grey.type();
+    cv::Mat minEnergy(grey.rows, grey.cols, type);
+    auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
+    const auto shrinkedCastle = removeEnergyCurve(castle, minEnergy, arrows, 1);
+    imwrite(path, shrinkedCastle);
+}

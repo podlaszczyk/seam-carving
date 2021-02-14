@@ -140,3 +140,43 @@ void drawLeastEnergyCurve(cv::Mat& castle, cv::Mat& minEnergy, const cv::Mat& ar
         minEnergy.at<uchar>(startMinLoc) = 255;
     }
 }
+
+cv::Mat removeEnergyCurve(cv::Mat& castle, cv::Mat& minEnergy, cv::Mat& arrows, int curvesNumber)
+{
+    (void)curvesNumber;
+    cv::Mat emptyCastle(castle.rows, castle.cols - 1, castle.type());
+
+    double minVal;
+    double maxVal;
+    cv::Point minLoc;
+    cv::Point maxLoc;
+    minMaxLoc(minEnergy.row(0), &minVal, &maxVal, &minLoc, &maxLoc);
+
+    for (int counter = 0; counter < arrows.rows; ++counter)
+    {
+        // copy all values except seam-curved point
+        for (int i = 0; i < castle.cols; ++i)
+        {
+            if (minLoc == cv::Point(counter, i))
+            {
+                continue;
+            }
+            emptyCastle.at<cv::Vec3b>(counter, i) = castle.at<cv::Vec3b>(counter, i);
+        }
+        if (arrows.at<float>(minLoc) == -1)
+        {
+            minLoc.x -= 1;
+            minLoc.y += 1;
+        }
+        else if (arrows.at<float>(minLoc) == 0)
+        {
+            minLoc.y += 1;
+        }
+        else
+        {
+            minLoc.x += 1;
+            minLoc.y += 1;
+        }
+    }
+    return emptyCastle;
+}
