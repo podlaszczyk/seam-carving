@@ -82,7 +82,7 @@ TEST_CASE("Minimal Energy")
 
     cv::Mat minEnergy(6, 6, CV_32F);
     cv::Mat expectedMinEnergy(6, 6, CV_32F, minData);
-    minimalEnergyToBottom(grey, minEnergy);
+    minimalEnergyToBottom<float>(grey, minEnergy);
 
     cv::Ptr<cv::Formatter> fmt = cv::Formatter::get(cv::Formatter::FMT_DEFAULT);
     fmt->set32fPrecision(1);
@@ -99,4 +99,17 @@ TEST_CASE("Minimal Energy")
     }
 
     REQUIRE(areIdentical);
+}
+
+TEST_CASE("Minimal Energy For Castle")
+{
+    const auto grey = imread("/workdir/examples/castle-sobel-x-y.jpg", IMREAD_GRAYSCALE);
+    fs::path path{"/workdir/examples/castle-minimal-energy.jpg"};
+
+    const auto type = grey.type();
+    //    cvtColor(image, greyMat, cv::COLOR_BGR2GRAY);
+
+    cv::Mat minEnergy(grey.rows, grey.cols, type);
+    minimalEnergyToBottom<uchar>(grey, minEnergy);
+    imwrite(path, minEnergy);
 }
