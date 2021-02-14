@@ -71,7 +71,8 @@ void drawLeastEnergyCurve(cv::Mat& castle, const cv::Mat& minEnergy, const cv::M
 
     minMaxLoc(minEnergy.row(0), &minVal, &maxVal, &minLoc, &maxLoc);
 
-    std::cout << "minVal " << minVal << " maxVal " << maxVal << " minLoc " << minLoc << " maxLoc " << maxLoc << "\n";
+    //    std::cout << "minVal " << minVal << " maxVal " << maxVal << " minLoc " << minLoc << " maxLoc " << maxLoc <<
+    //    "\n";
     for (int counter = 0; counter < arrows.rows; ++counter)
     {
         cv::Vec3b& color = castle.at<cv::Vec3b>(minLoc);
@@ -93,6 +94,49 @@ void drawLeastEnergyCurve(cv::Mat& castle, const cv::Mat& minEnergy, const cv::M
             minLoc.x += 1;
             minLoc.y += 1;
         }
-        std::cout << " minLoc " << minLoc << "\n";
+        //        std::cout << " minLoc " << minLoc << "\n";
+    }
+}
+
+void drawLeastEnergyCurve(cv::Mat& castle, cv::Mat& minEnergy, const cv::Mat& arrows, int curvesNumber)
+{
+    double minVal;
+    double maxVal;
+    cv::Point minLoc;
+    cv::Point maxLoc;
+
+    cv::Point startMinLoc;
+    for (int curves = 0; curves < curvesNumber; ++curves)
+    {
+        minMaxLoc(minEnergy.row(0), &minVal, &maxVal, &startMinLoc, &maxLoc);
+        minLoc = startMinLoc;
+        //    std::cout << "minVal " << minVal << " maxVal " << maxVal << " minLoc " << minLoc << " maxLoc " << maxLoc
+        //    << "\n";
+        for (int counter = 0; counter < arrows.rows; ++counter)
+        {
+            cv::Vec3b& color = castle.at<cv::Vec3b>(minLoc);
+            color[0] = 0;
+            color[1] = 0;
+            color[2] = 255;
+
+            if (arrows.at<float>(minLoc) == -1)
+            {
+                minLoc.x -= 1;
+                minLoc.y += 1;
+            }
+            else if (arrows.at<float>(minLoc) == 0)
+            {
+                minLoc.y += 1;
+            }
+            else
+            {
+                minLoc.x += 1;
+                minLoc.y += 1;
+            }
+            //        std::cout << " minLoc " << minLoc << "\n";
+
+            // mark pixel as already used by setting value to high value 999999
+        }
+        minEnergy.at<uchar>(startMinLoc) = 255;
     }
 }

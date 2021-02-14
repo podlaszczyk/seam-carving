@@ -167,3 +167,45 @@ TEST_CASE("Draw one red curve with least Energy")
     drawLeastEnergyCurve(castle, minEnergy, arrows);
     imwrite(path, castle);
 }
+
+TEST_CASE("Draw 20 red curves with least Energy")
+{
+    auto castle = imread("/workdir/examples/castle.jpg");
+    const auto grey = imread("/workdir/examples/castle-sobel-x-y.jpg", IMREAD_GRAYSCALE);
+    fs::path path{"/workdir/examples/castle-red-least-20-energy-curves.jpg"};
+
+    const auto type = grey.type();
+    cv::Mat minEnergy(grey.rows, grey.cols, type);
+    const auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
+
+    drawLeastEnergyCurve(castle, minEnergy, arrows, 20);
+    imwrite(path, castle);
+}
+
+TEST_CASE("Draw 100 red curves with least Energy")
+{
+    auto castle = imread("/workdir/examples/castle.jpg");
+    const auto grey = imread("/workdir/examples/castle-sobel-x-y.jpg", IMREAD_GRAYSCALE);
+    fs::path path{"/workdir/examples/castle-red-least-100-energy-curves.jpg"};
+
+    const auto type = grey.type();
+    cv::Mat minEnergy(grey.rows, grey.cols, type);
+    const auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
+
+    drawLeastEnergyCurve(castle, minEnergy, arrows, 100);
+    imwrite(path, castle);
+}
+
+TEST_CASE("Draw 400 red curves with least Energy")
+{
+    auto castle = imread("/workdir/examples/castle.jpg");
+    const auto grey = imread("/workdir/examples/castle-sobel-x-y.jpg", IMREAD_GRAYSCALE);
+    fs::path path{"/workdir/examples/castle-red-least-400-energy-curves.jpg"};
+
+    const auto type = grey.type();
+    cv::Mat minEnergy(grey.rows, grey.cols, type);
+    const auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
+
+    drawLeastEnergyCurve(castle, minEnergy, arrows, 400);
+    imwrite(path, castle);
+}
