@@ -46,20 +46,27 @@ void sobelY(const cv::Mat& image, fs::path out)
     imwrite(out, gradY);
 }
 
-cv::Mat sobelXY(const cv::Mat& image, fs::path out)
+cv::Mat sobelXY(const cv::Mat& image)
 {
     cv::Mat greyMat;
-    cv::Mat gradX;
-    cv::Mat gradY;
+    cv::Mat gradX, absGradX;
+    cv::Mat gradY, absGradY;
     cv::Mat output;
 
     cvtColor(image, greyMat, cv::COLOR_BGR2GRAY);
-    Sobel(greyMat, gradX, CV_64F, 1, 0);
-    Sobel(greyMat, gradY, CV_64F, 0, 1);
-    addWeighted(gradX, 0.5, gradY, 0.5, 0.0, output);
+    Sobel(greyMat, gradX, CV_16S, 1, 0);
+    Sobel(greyMat, gradY, CV_16S, 0, 1);
+    convertScaleAbs(gradX, absGradX);
+    convertScaleAbs(gradY, absGradY);
+    addWeighted(absGradX, 0.5, absGradY, 0.5, 0.0, output);
 
-    imwrite(out, output);
     return output;
+
+    //    addWeighted(gradX, 0.5, gradY, 0.5, 0.0, output);
+    //
+    //    cv::Mat pic16bit;
+    //    output.convertTo(pic16bit, CV_16S );
+    //    return pic16bit;
 }
 
 void drawLeastEnergyCurve(cv::Mat& castle, const cv::Mat& minEnergy, const cv::Mat& arrows)
@@ -144,8 +151,9 @@ void drawLeastEnergyCurve(cv::Mat& castle, cv::Mat& minEnergy, const cv::Mat& ar
 cv::Mat removeEnergyCurve(const cv::Mat& castle, const cv::Mat& minEnergy, const cv::Mat& arrows, int curvesNumber)
 {
     cv::Mat emptyCastle(castle.rows, castle.cols - curvesNumber, castle.type());
-    //    cv::Mat minEnergyLocal = minEnergy;
+    cv::Mat minEnergyLocal = minEnergy;
     cv::Mat arrowsLocal = arrows;
+
     double minVal;
     double maxVal;
     cv::Point minLoc;
@@ -155,7 +163,7 @@ cv::Mat removeEnergyCurve(const cv::Mat& castle, const cv::Mat& minEnergy, const
     // do removal N times according to curves number
     for (int cNum = 0; cNum < curvesNumber; ++cNum)
     {
-        minMaxLoc(minEnergy.row(0), &minVal, &maxVal, &minLoc, &maxLoc);
+        minMaxLoc(minEnergyLocal.row(0), &minVal, &maxVal, &minLoc, &maxLoc);
         //        cv::Mat minEnergyLocal;
         //        cv::Mat grey;
 
@@ -186,9 +194,11 @@ cv::Mat removeEnergyCurve(const cv::Mat& castle, const cv::Mat& minEnergy, const
             }
         }
         cv::Mat grey;
-        cvtColor(emptyCastle, grey, cv::COLOR_BGR2GRAY);
-        cv::Mat minEnergyLocal(grey.rows, grey.cols, grey.type());
-        arrowsLocal = minimalEnergyToBottom<uchar>(grey, minEnergyLocal);
+        auto sobel = sobelXY(emptyCastle);
+        //        cvtColor(emptyCastle, grey, cv::COLOR_BGR2GRAY);
+        cv::Mat minEnergyLocal(sobel.rows, sobel.cols, CV_16U);
+        //        cv::Mat minEnergyLocal(sobel.rows, sobel.cols, sobel.type());
+        arrowsLocal = minimalEnergyToBottom<uchar, ushort>(sobel, minEnergyLocal);
     }
     return emptyCastle;
 }

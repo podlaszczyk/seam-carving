@@ -11,10 +11,10 @@ void grey(const cv::Mat& image, fs::path out);
 void edges(const cv::Mat& image, fs::path out);
 void sobelX(const cv::Mat& image, fs::path out);
 void sobelY(const cv::Mat& image, fs::path out);
-cv::Mat sobelXY(const cv::Mat& image, fs::path out);
+cv::Mat sobelXY(const cv::Mat& image);
 void printImage(const cv::Mat& image);
 
-template <typename type>
+template <typename typeIn, typename typeOut>
 cv::Mat minimalEnergyToBottom(const cv::Mat& Energy, cv::Mat& MinEnergy)
 {
     cv::Mat arrows(Energy.rows - 1, Energy.cols, CV_32F);
@@ -24,10 +24,15 @@ cv::Mat minimalEnergyToBottom(const cv::Mat& Energy, cv::Mat& MinEnergy)
         throw std::logic_error("too many channels");
     }
     // copy bottom row
-    Energy.row(Energy.rows - 1).copyTo(MinEnergy.row(MinEnergy.rows - 1));
+    //    Energy.row(Energy.rows - 1).copyTo(MinEnergy.row(MinEnergy.rows - 1));
+    const auto lastRow = MinEnergy.rows - 1;
+    for (auto col = 0; col < Energy.cols; ++col)
+    {
+        MinEnergy.at<typeOut>(lastRow, col) = static_cast<typeOut>(Energy.at<typeIn>(lastRow, col));
+    }
 
-    cv::Ptr<cv::Formatter> fmt = cv::Formatter::get(cv::Formatter::FMT_DEFAULT);
-    fmt->set32fPrecision(2);
+    //    cv::Ptr<cv::Formatter> fmt = cv::Formatter::get(cv::Formatter::FMT_DEFAULT);
+    //    fmt->set32fPrecision(2);
 
     const auto penultimate = Energy.rows - 2;
     const auto cols = MinEnergy.cols;
@@ -38,23 +43,27 @@ cv::Mat minimalEnergyToBottom(const cv::Mat& Energy, cv::Mat& MinEnergy)
     {
         for (int c = 0; c < cols; ++c)
         {
-            std::vector<type> children;
+            std::vector<typeOut> children;
             if (c != 0 && c != lastColumn)
             {
-                children = {MinEnergy.at<type>(r + 1, c - 1), MinEnergy.at<type>(r + 1, c),
-                            MinEnergy.at<type>(r + 1, c + 1)};
+                children = {MinEnergy.at<typeOut>(r + 1, c - 1), MinEnergy.at<typeOut>(r + 1, c),
+                            MinEnergy.at<typeOut>(r + 1, c + 1)};
             }
             else if (c == 0)
             {
-                children = {MinEnergy.at<type>(r + 1, c), MinEnergy.at<type>(r + 1, c + 1)};
+                children = {MinEnergy.at<typeOut>(r + 1, c), MinEnergy.at<typeOut>(r + 1, c + 1)};
             }
             else
             {
-                children = {MinEnergy.at<type>(r + 1, c - 1), MinEnergy.at<type>(r + 1, c)};
+                children = {MinEnergy.at<typeOut>(r + 1, c - 1), MinEnergy.at<typeOut>(r + 1, c)};
             }
 
             const auto minimalChild = std::min_element(children.cbegin(), children.cend());
-            MinEnergy.at<type>(r, c) = Energy.at<type>(r, c) + *minimalChild;
+            const int val = *minimalChild;
+            const int pixel = Energy.at<typeIn>(r, c);
+            const int result = val + pixel;
+            //            MinEnergy.at<typeOut>(r, c) = (static_cast<typeOut>(Energy.at<typeIn>(r, c)) + val);
+            MinEnergy.at<typeOut>(r, c) = static_cast<typeOut>(result);
 
             if (c == 0)
             {

@@ -54,31 +54,32 @@ TEST_CASE("SobelY")
 
 TEST_CASE("SobelXY")
 {
-    const auto image = imread("/workdir/examples/castle.jpg");
-    fs::path path{"/workdir/examples/castle-sobel-x-y.jpg"};
+    const auto image = imread("/workdir/examples/dali.jpg");
+    fs::path path{"/workdir/examples/dali-sobel-x-y2.jpg"};
 
-    sobelXY(image, path);
+    const auto output = sobelXY(image);
+    imwrite(path, output);
 }
 
 TEST_CASE("Minimal Energy")
 {
     // clang-format off
-    float data[36] = {
-                    0.1, 0.8, 0.8, 0.3, 0.5, 0.4,
-                    0.7, 0.8, 0.1, 0.0, 0.8, 0.4,
-                    0.8, 0.0, 0.4, 0.7, 0.2, 0.9,
-                    0.9, 0.0, 0.0, 0.5, 0.9, 0.4,
-                    0.2, 0.4, 0.0, 0.2, 0.4, 0.5,
-                    0.2, 0.4, 0.2, 0.5, 0.3, 0.0};
+    int data[36] = {
+                    255 * 0.1, 255 * 0.8, 255 * 0.8, 255 * 0.3, 255 * 0.5, 255 * 0.4,
+                    255 * 0.7, 255 * 0.8, 255 * 0.1, 255 * 0.0, 255 * 0.8, 255 * 0.4,
+                    255 * 0.8, 255 * 0.0, 255 * 0.4, 255 * 0.7, 255 * 0.2, 255 * 0.9,
+                    255 * 0.9, 255 * 0.0, 255 * 0.0, 255 * 0.5, 255 * 0.9, 255 * 0.4,
+                    255 * 0.2, 255 * 0.4, 255 * 0.0, 255 * 0.2, 255 * 0.4, 255 * 0.5,
+                    255 * 0.2, 255 * 0.4, 255 * 0.2, 255 * 0.5, 255 * 0.3, 255 * 0.0};
     cv::Mat grey(6, 6, CV_32F, data);
 
-    float minData[36] = {
-                    1.0, 1.1, 1.1, 0.6, 1.1, 1.7,
-                    0.9, 1.0, 0.3, 0.6, 1.7, 1.3,
-                    1.0, 0.2, 0.6, 0.9, 0.9, 1.7,
-                    1.3, 0.2, 0.2, 0.7, 1.3, 0.8,
-                    0.4, 0.6, 0.2, 0.4, 0.4, 0.5,
-                    0.2, 0.4, 0.2, 0.5, 0.3, 0.0};
+    int minData[36] = {
+                    255 * 1.0, 255 * 1.1, 255 * 1.1, 255 * 0.6, 255 * 1.1, 255 * 1.7,
+                    255 * 0.9, 255 * 1.0, 255 * 0.3, 255 * 0.6, 255 * 1.7, 255 * 1.3,
+                    255 * 1.0, 255 * 0.2, 255 * 0.6, 255 * 0.9, 255 * 0.9, 255 * 1.7,
+                    255 * 1.3, 255 * 0.2, 255 * 0.2, 255 * 0.7, 255 * 1.3, 255 * 0.8,
+                    255 * 0.4, 255 * 0.6, 255 * 0.2, 255 * 0.4, 255 * 0.4, 255 * 0.5,
+                    255 * 0.2, 255 * 0.4, 255 * 0.2, 255 * 0.5, 255 * 0.3, 255 * 0.0};
 
     float expectedArrowsData[36] = {
                     0, 1, 0, -1, -1, 0,
@@ -89,10 +90,10 @@ TEST_CASE("Minimal Energy")
 
     // clang-format on
 
-    cv::Mat minEnergy(6, 6, CV_32F);
-    cv::Mat expectedMinEnergy(6, 6, CV_32F, minData);
+    cv::Mat minEnergy(6, 6, CV_32S);
+    cv::Mat expectedMinEnergy(6, 6, CV_32S, minData);
     cv::Mat expectedArrows(5, 6, CV_32F, expectedArrowsData);
-    const auto arrows = minimalEnergyToBottom<float>(grey, minEnergy);
+    const auto arrows = minimalEnergyToBottom<int, int>(grey, minEnergy);
 
     cv::Ptr<cv::Formatter> fmt = cv::Formatter::get(cv::Formatter::FMT_DEFAULT);
     fmt->set32fPrecision(1);
@@ -122,142 +123,151 @@ TEST_CASE("Minimal Energy")
 
 TEST_CASE("Minimal Energy For Castle")
 {
-    const auto grey = imread("/workdir/examples/castle-sobel-x-y.jpg", IMREAD_GRAYSCALE);
-    fs::path path{"/workdir/examples/castle-minimal-energy.jpg"};
+    const auto image = imread("/workdir/examples/dali.jpg");
+    const auto output = sobelXY(image);
 
-    const auto type = grey.type();
-    //    cvtColor(image, greyMat, cv::COLOR_BGR2GRAY);
+    fs::path path{"/workdir/examples/dali-minimal-energy-sobel-x-y.png"};
 
-    cv::Mat minEnergy(grey.rows, grey.cols, type);
-    minimalEnergyToBottom<uchar>(grey, minEnergy);
+    const auto type = output.type();
+    (void)type;
+
+    //    cv::Mat minEnergy;
+    //    output.convertTo(minEnergy, CV_16U, 255);
+    cv::Mat minEnergy(output.rows, output.cols, CV_8U);
+    minimalEnergyToBottom<uchar, uchar>(output, minEnergy);
+
+    //    cv::Mat res;
+    //    minEnergy.convertTo(res, CV_16U, 1, 255*255/2);
+
     imwrite(path, minEnergy);
 }
 
-TEST_CASE("Draw pink rectangle on Castle")
-{
-    auto castle = imread("/workdir/examples/castle.jpg");
-    fs::path path{"/workdir/examples/castle-pink.jpg"};
+// TEST_CASE("Draw pink rectangle on Castle")
+//{
+//    auto castle = imread("/workdir/examples/castle.jpg");
+//    fs::path path{"/workdir/examples/castle-pink.jpg"};
+//
+//    // rgb(255,105,180) pink
+//    viz::Color color(255, 105, 180);
+//    for (int i = 200; i < 400; ++i)
+//    {
+//        for (int j = 100; j < 200; ++j)
+//        {
+//            Vec3b& color = castle.at<Vec3b>(Point(i, j));
+//            color[0] = 255;
+//            color[1] = 105;
+//            color[2] = 180;
+//        }
+//    }
+//
+//    imwrite(path, castle);
+//}
+//
+//
+// TEST_CASE("Draw one red curve with least Energy")
+//{
+//    auto castle = imread("/workdir/examples/castle.jpg");
+//    const auto output = sobelXY(castle);
+//    fs::path path{"/workdir/examples/castle-red-least-energy-curve.png"};
+//
+//    //    const auto type = grey.type();
+//    cv::Mat minEnergy(output.rows, output.cols, CV_16U);
+//    const auto arrows = minimalEnergyToBottom<uchar, ushort>(output, minEnergy);
+//
+//    drawLeastEnergyCurve(castle, minEnergy, arrows);
+//    imwrite(path, castle);
+//}
+//
+// TEST_CASE("Draw 20 red curves with least Energy")
+//{
+//    auto castle = imread("/workdir/examples/castle.jpg");
+//    const auto output = sobelXY(castle);
+//    fs::path path{"/workdir/examples/castle-red-least-20-energy-curves.png"};
+//
+//    //    const auto type = grey.type();
+//    cv::Mat minEnergy(output.rows, output.cols, CV_16U);
+//    const auto arrows = minimalEnergyToBottom<uchar, ushort>(output, minEnergy);
+//
+//    drawLeastEnergyCurve(castle, minEnergy, arrows, 20);
+//    imwrite(path, castle);
+//}
+//
+// TEST_CASE("Draw 100 red curves with least Energy")
+//{
+//    auto castle = imread("/workdir/examples/castle.jpg");
+//    const auto output = sobelXY(castle);
+//    fs::path path{"/workdir/examples/castle-red-least-100-energy-curves.png"};
+//
+//    //    const auto type = grey.type();
+//    cv::Mat minEnergy(output.rows, output.cols, CV_16U);
+//    const auto arrows = minimalEnergyToBottom<uchar, ushort>(output, minEnergy);
+//
+//    drawLeastEnergyCurve(castle, minEnergy, arrows, 100);
+//    imwrite(path, castle);
+//}
+//
+// TEST_CASE("Draw 400 red curves with least Energy")
+//{
+//    auto castle = imread("/workdir/examples/castle.jpg");
+//    const auto output = sobelXY(castle);
+//    fs::path path{"/workdir/examples/castle-red-least-400-energy-curves.png"};
+//
+//    //    const auto type = grey.type();
+//    cv::Mat minEnergy(output.rows, output.cols, CV_16U);
+//    const auto arrows = minimalEnergyToBottom<uchar, ushort>(output, minEnergy);
+//
+//    drawLeastEnergyCurve(castle, minEnergy, arrows, 400);
+//    imwrite(path, castle);
+//}
+//
+// TEST_CASE("Remove one least important red curve from castle")
+//{
+//    auto castle = imread("/workdir/examples/castle.jpg");
+//    const auto grey = imread("/workdir/examples/castle-minimal-energy-sobel-x-y.jpg", IMREAD_GRAYSCALE);
+//    fs::path path{"/workdir/examples/castle-shrinked-1.jpg"};
+//
+//    const auto type = grey.type();
+//    cv::Mat minEnergy(grey.rows, grey.cols, type);
+//    auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
+//    const auto shrinkedCastle = removeEnergyCurve(castle, minEnergy, arrows, 1);
+//    imwrite(path, shrinkedCastle);
+//}
+//
+// TEST_CASE("Remove 2 least important red curve from castle")
+//{
+//    auto castle = imread("/workdir/examples/castle.jpg");
+//    const auto grey = imread("/workdir/examples/castle-minimal-energy-sobel-x-y.jpg", IMREAD_GRAYSCALE);
+//    fs::path path{"/workdir/examples/castle-shrinked-2.jpg"};
+//
+//    const auto type = grey.type();
+//    cv::Mat minEnergy(grey.rows, grey.cols, type);
+//    auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
+//    const auto shrinkedCastle = removeEnergyCurve(castle, minEnergy, arrows, 2);
+//    imwrite(path, shrinkedCastle);
+//}
+//
+// TEST_CASE("Remove 100 least important red curve from castle")
+//{
+//    auto castle = imread("/workdir/examples/castle.jpg");
+//    const auto grey = imread("/workdir/examples/castle-minimal-energy-sobel-x-y.jpg", IMREAD_GRAYSCALE);
+//    fs::path path{"/workdir/examples/castle-shrinked-100.jpg"};
+//
+//    const auto type = grey.type();
+//    cv::Mat minEnergy(grey.rows, grey.cols, type);
+//    auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
+//    const auto shrinkedCastle = removeEnergyCurve(castle, minEnergy, arrows, 100);
+//    imwrite(path, shrinkedCastle);
+//}
 
-    // rgb(255,105,180) pink
-    viz::Color color(255, 105, 180);
-    for (int i = 200; i < 400; ++i)
-    {
-        for (int j = 100; j < 200; ++j)
-        {
-            Vec3b& color = castle.at<Vec3b>(Point(i, j));
-            color[0] = 255;
-            color[1] = 105;
-            color[2] = 180;
-        }
-    }
-
-    imwrite(path, castle);
-}
-
-TEST_CASE("Draw one red curve with least Energy")
-{
-    auto castle = imread("/workdir/examples/castle.jpg");
-    const auto grey = imread("/workdir/examples/castle-sobel-x-y.jpg", IMREAD_GRAYSCALE);
-    fs::path path{"/workdir/examples/castle-red-least-energy-curve.jpg"};
-
-    const auto type = grey.type();
-    cv::Mat minEnergy(grey.rows, grey.cols, type);
-    const auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
-
-    drawLeastEnergyCurve(castle, minEnergy, arrows);
-    imwrite(path, castle);
-}
-
-TEST_CASE("Draw 20 red curves with least Energy")
-{
-    auto castle = imread("/workdir/examples/castle.jpg");
-    const auto grey = imread("/workdir/examples/castle-sobel-x-y.jpg", IMREAD_GRAYSCALE);
-    fs::path path{"/workdir/examples/castle-red-least-20-energy-curves.jpg"};
-
-    const auto type = grey.type();
-    cv::Mat minEnergy(grey.rows, grey.cols, type);
-    const auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
-
-    drawLeastEnergyCurve(castle, minEnergy, arrows, 20);
-    imwrite(path, castle);
-}
-
-TEST_CASE("Draw 100 red curves with least Energy")
-{
-    auto castle = imread("/workdir/examples/castle.jpg");
-    const auto grey = imread("/workdir/examples/castle-sobel-x-y.jpg", IMREAD_GRAYSCALE);
-    fs::path path{"/workdir/examples/castle-red-least-100-energy-curves.jpg"};
-
-    const auto type = grey.type();
-    cv::Mat minEnergy(grey.rows, grey.cols, type);
-    const auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
-
-    drawLeastEnergyCurve(castle, minEnergy, arrows, 100);
-    imwrite(path, castle);
-}
-
-TEST_CASE("Draw 400 red curves with least Energy")
-{
-    auto castle = imread("/workdir/examples/castle.jpg");
-    const auto grey = imread("/workdir/examples/castle-sobel-x-y.jpg", IMREAD_GRAYSCALE);
-    fs::path path{"/workdir/examples/castle-red-least-400-energy-curves.jpg"};
-
-    const auto type = grey.type();
-    cv::Mat minEnergy(grey.rows, grey.cols, type);
-    const auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
-
-    drawLeastEnergyCurve(castle, minEnergy, arrows, 400);
-    imwrite(path, castle);
-}
-
-TEST_CASE("Remove one least important red curve from castle")
-{
-    auto castle = imread("/workdir/examples/castle.jpg");
-    const auto grey = imread("/workdir/examples/castle-sobel-x-y.jpg", IMREAD_GRAYSCALE);
-    fs::path path{"/workdir/examples/castle-shrinked-1.jpg"};
-
-    const auto type = grey.type();
-    cv::Mat minEnergy(grey.rows, grey.cols, type);
-    auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
-    const auto shrinkedCastle = removeEnergyCurve(castle, minEnergy, arrows, 1);
-    imwrite(path, shrinkedCastle);
-}
-
-TEST_CASE("Remove 2 least important red curve from castle")
-{
-    auto castle = imread("/workdir/examples/castle.jpg");
-    const auto grey = imread("/workdir/examples/castle-sobel-x-y.jpg", IMREAD_GRAYSCALE);
-    fs::path path{"/workdir/examples/castle-shrinked-2.jpg"};
-
-    const auto type = grey.type();
-    cv::Mat minEnergy(grey.rows, grey.cols, type);
-    auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
-    const auto shrinkedCastle = removeEnergyCurve(castle, minEnergy, arrows, 2);
-    imwrite(path, shrinkedCastle);
-}
-
-TEST_CASE("Remove 100 least important red curve from castle")
-{
-    auto castle = imread("/workdir/examples/castle.jpg");
-    const auto grey = imread("/workdir/examples/castle-sobel-x-y.jpg", IMREAD_GRAYSCALE);
-    fs::path path{"/workdir/examples/castle-shrinked-100.jpg"};
-
-    const auto type = grey.type();
-    cv::Mat minEnergy(grey.rows, grey.cols, type);
-    auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
-    const auto shrinkedCastle = removeEnergyCurve(castle, minEnergy, arrows, 100);
-    imwrite(path, shrinkedCastle);
-}
-
-TEST_CASE("Remove 200 least important red curve from castle")
-{
-    auto castle = imread("/workdir/examples/castle.jpg");
-    const auto grey = imread("/workdir/examples/castle-sobel-x-y.jpg", IMREAD_GRAYSCALE);
-    fs::path path{"/workdir/examples/castle-shrinked-200.jpg"};
-
-    const auto type = grey.type();
-    cv::Mat minEnergy(grey.rows, grey.cols, type);
-    auto arrows = minimalEnergyToBottom<uchar>(grey, minEnergy);
-    const auto shrinkedCastle = removeEnergyCurve(castle, minEnergy, arrows, 200);
-    imwrite(path, shrinkedCastle);
-}
+// TEST_CASE("Remove 200 least important red curve from castle")
+//{
+//    auto castle = imread("/workdir/examples/castle.jpg");
+//    const auto sobelOutput = sobelXY(castle);
+////    const auto grey = imread("/workdir/examples/castle-minimal-energy-sobel-x-y.jpg", IMREAD_GRAYSCALE);
+//    fs::path path{"/workdir/examples/castle-shrinked-200.jpg"};
+//
+//    cv::Mat minEnergy(sobelOutput.rows, sobelOutput.cols, CV_16S);
+//    auto arrows = minimalEnergyToBottom<uchar, short>(sobelOutput, minEnergy);
+//    const auto shrinkedCastle = removeEnergyCurve(castle, minEnergy, arrows, 200);
+//    imwrite(path, shrinkedCastle);
+//}
